@@ -9,3 +9,6 @@
 ## 数据采集
 
 [1.业务数据采集](docs/业务数据采集.md)
+
+**推荐**
+[基于Docker部署canal环境](docs/基于docker部署canal环境.md)
