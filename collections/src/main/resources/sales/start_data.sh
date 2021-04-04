@@ -1,0 +1,1 @@
+java -jar gmall2020-mock-db-2020-11-27.jar
