@@ -9,8 +9,8 @@
 ## 数据采集
 
 [1.业务数据采集](docs/业务数据采集.md)
+[2.用户行为数据采集]()
 
-**推荐**
+**番外**
+
 [基于Docker部署canal环境](docs/基于docker部署canal环境.md)
-
-[aaa](collections/src/main/resources/canal/conf/canal.properties)
