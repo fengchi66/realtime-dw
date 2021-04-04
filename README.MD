@@ -12,3 +12,5 @@
 
 **推荐**
 [基于Docker部署canal环境](docs/基于docker部署canal环境.md)
+
+[aaa](collections/src/main/resources/canal/conf/canal.properties)
