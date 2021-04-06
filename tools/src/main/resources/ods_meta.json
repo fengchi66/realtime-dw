@@ -1,0 +1,252 @@
+{
+  "connections": {
+    "stage_instance": {
+      "name": "stage_instance",
+      "address": "localhost:3306",
+      "username": "root",
+      "password": "992318abC"
+    }
+  },
+  "tables": [
+    {
+      "database": "gmall2021",
+      "table": "activity_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "activity_rule",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "activity_sku",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_attr_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_attr_value",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_category1",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_category2",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_category3",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_category_view",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_dic",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_frontend_param",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_province",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_region",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_sale_attr",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_trademark",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "cart_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "cms_banner",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "comment_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "coupon_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "coupon_range",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "coupon_use",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "favor_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "financial_sku_cost",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "order_detail",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "order_detail_activity",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "order_detail_coupon",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "order_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "order_refund_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "order_status_log",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "payment_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "refund_payment",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "seckill_goods",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "sku_attr_value",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "base_region",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "sku_image",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "sku_info",
+      "connectionName": "stage_instance"
+    },
+    ,{
+      "database": "gmall2021",
+      "table": "sku_sale_attr_value",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "spu_image",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "spu_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "spu_poster",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "spu_sale_attr",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "spu_sale_attr_value",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "user_address",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "user_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "ware_info",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "ware_order_task",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "ware_order_task_detail",
+      "connectionName": "stage_instance"
+    },
+    {
+      "database": "gmall2021",
+      "table": "ware_sku",
+      "connectionName": "stage_instance"
+    }
+  ]
+}

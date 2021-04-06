@@ -11,6 +11,8 @@
     <modules>
         <module>common</module>
         <module>collections</module>
+        <module>ods2dwd</module>
+        <module>tools</module>
     </modules>
 
     <properties>
@@ -78,6 +80,11 @@
                     <groupId>org.xerial.snappy</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients_2.11</artifactId>
+            <version>${flink.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
