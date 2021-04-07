@@ -1,15 +1,11 @@
 import java.util.Properties
 
-import com.alibaba.otter.canal.protocol.FlatMessage
 import com.gmall.data.common.config.{Config, KafkaConfig}
 import com.gmall.data.common.entity.ods.gmall2021.OrderInfo
 import com.gmall.data.common.source.SourceFactory
-import com.gmall.data.common.source.binlog.OdsModelFactory
 import com.gmall.data.common.utils.Constants
-import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 import org.slf4j.LoggerFactory
 
 object KafkaConsumerTest {

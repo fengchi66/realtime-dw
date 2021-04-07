@@ -18,6 +18,10 @@
 
 [2.用户行为数据采集]()
 
+## dwd
+
+[DWD层数据准备](docs/DWD层数据准备.md)
+
 **番外**
 
 [基于Docker部署canal环境](docs/基于docker部署canal环境.md)
