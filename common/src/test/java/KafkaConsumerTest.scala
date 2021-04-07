@@ -2,7 +2,9 @@ import java.util.Properties
 
 import com.alibaba.otter.canal.protocol.FlatMessage
 import com.gmall.data.common.config.{Config, KafkaConfig}
+import com.gmall.data.common.entity.ods.gmall2021.OrderInfo
 import com.gmall.data.common.source.SourceFactory
+import com.gmall.data.common.source.binlog.OdsModelFactory
 import com.gmall.data.common.utils.Constants
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.api.java.utils.ParameterTool
@@ -28,7 +30,8 @@ object KafkaConsumerTest {
 
     val kafkaConfig = KafkaConfig(Config.kafkaBrokers, "test", mode, timestamp)
 
-    val value = SourceFactory.createKafkaStream[FlatMessage](kafkaConfig, "gmall2021.order_info")
+    val value = SourceFactory.createBinlogStream[OrderInfo](kafkaConfig, "gmall2021.order_info")
+//    SourceFactory.createKafkaStream[FlatMessage](kafkaConfig, "gmall2021.order_info").print()
 
     value.print()
 
