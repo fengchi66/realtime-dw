@@ -18,6 +18,8 @@ object Constants {
   val KEYWORD_BLACK_LIST: Seq[String] = Seq[String]("type")
   val DB_ENV: Seq[String] = Seq[String]("prod", "stage")
 
+  val USER_INFO_TOPIC = "gmall2021.user_info"
+
   val ODS_TABLE_LIST: Seq[String] = Seq[String](
     "gmall2021.activity_info",
     "gmall2021.activity_rule",
