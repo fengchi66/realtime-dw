@@ -1,12 +1,12 @@
 package com.gmall.data.common.source
 
 import java.sql.Timestamp
-import java.util.Properties
+import java.util.{Objects, Properties}
 
 import com.alibaba.otter.canal.protocol.FlatMessage
 import com.gmall.data.common.config.KafkaConfig
 import com.gmall.data.common.source.binlog.OdsModelFactory
-import com.gmall.data.common.utils.{Constants, GsonUtil}
+import com.gmall.data.common.utils.{Constants, GsonUtil, LoggerUtil}
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala._
@@ -53,14 +53,16 @@ object SourceFactory extends Serializable {
   def createBinlogStream[T: TypeInformation](kafkaConfig: KafkaConfig,
                                              topic: String
                                             )(implicit env: StreamExecutionEnvironment, real: ClassTag[T]): DataStream[T] = {
-    val flatMsgStream = createKafkaStream[FlatMessage](kafkaConfig, topic)
+    // 不需要DDL语句的binlog
+    val flatMsgStream = createKafkaStream[FlatMessage](kafkaConfig, topic).filter(r => r.getData != null)
 
     flatMsgStream.flatMap(r => {
       var a = Seq[Any]()
       try {
         a = OdsModelFactory.build(r)
       } catch {
-        case e: Exception => LOGGER.error("failed to build ods model", e)
+        case e: Exception => LoggerUtil.error(LOGGER, e,
+          s"failed to build ods model, input=${r}")
       }
       a.asInstanceOf[Seq[T]]
     }).uid(s"ods_${real.runtimeClass.getSimpleName}")
