@@ -6,7 +6,7 @@ import com.gmall.data.common.entity.ods.Model
  * 订单和订单明细关联宽表对应实体类
  * "id"相关的字段，在数仓中用string类型表示
  */
-class DwdOrderDetail extends Model{
+class DwdOrderDetail extends Model with Serializable {
 
   override var ts: Long = _
   // 订单明细表
@@ -59,4 +59,8 @@ class DwdOrderDetail extends Model{
   // category
   var category3_name: String = _
 
+}
+
+object DwdOrderDetail {
+  def apply(): DwdOrderDetail = new DwdOrderDetail()
 }
