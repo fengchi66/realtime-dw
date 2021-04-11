@@ -11,5 +11,13 @@
 
     <artifactId>ods2dwd</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.gmall.data</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 
 </project>

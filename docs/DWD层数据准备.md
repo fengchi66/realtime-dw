@@ -327,6 +327,118 @@ dim:dim_user_info
 
 
 
+## 事实表与事实表关联
+
+**对于电商业务场景来说**，订单表一般会记录该订单的下单、支付等状态以及订单金额等信息，订单明细表则会记录该订单更加详细的信息，比如商品ID、品牌、类目等信息，一般来说，这两张表是具有业务上的事务性的，两张表数据的INSERT、UPDATE往往是相关联的。
+
+对于离线数仓来说，往往会把业务表T+1同步到Hive中，在数仓中T+1的Join任务让两张表关联。而对于实时数仓来说，ODS层的数据在Kafka中，一般是使用Flink/Flink Sql消费Kafka中的数据实现双流Join的语义使得两张表关联，形成一张DWD层的事实宽表。
+
+在flink中的双流join大体分为两种，一种是基于时间窗口的 join（Time Windowed Join），比如 join、coGroup 等。另一种是基于状态缓存的 join（Temporal Table Join），比如 intervalJoin。
+
+关于如何基于DataStream Api实现双流Join，已经在其他文章中有详细说明了：[Streaming Joins](https://gitee.com/joeyooa/bigdata-project/blob/main/docs/flink/FlinkStreamingJoins.md)
+
+
+
+### 订单表关联订单明细表
+
+订单系统中，订单表和订单明细表是具有业务的事务性的，当下单时，订单表中会INSERT一条订单数据，对应的会异步插入订单明细数据到明细表中。订单表与订单明细表关联实现的是**Inner Join**语义，适合使用Interval Join来实现，Interval Join目前只支持事件时间语义。
+
+#### Interval Join
+
+```scala
+import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction;
+import org.apache.flink.streaming.api.windowing.time.Time;
+
+...
+
+val orangeStream: DataStream[Integer] = ...
+val greenStream: DataStream[Integer] = ...
+
+orangeStream
+    .keyBy(elem => /* select key */)
+    .intervalJoin(greenStream.keyBy(elem => /* select key */))
+    .between(Time.milliseconds(-2), Time.milliseconds(1))
+    .process(new ProcessJoinFunction[Integer, Integer, String] {
+        override def processElement(left: Integer, right: Integer, ctx: ProcessJoinFunction[Integer, Integer, String]#Context, out: Collector[String]): Unit = {
+         out.collect(left + "," + right); 
+        }
+      });
+    });
+```
+
+- Innerval Join的原理是连接两个keyedStream, 按照相同的key在一个相对数据时间的时间段内进行连接。
+- between方法传递的两个参数lowerBound和upperBound，用来控制右边的流可以与哪个时间范围内的左边的流进行关联，即：leftElement.timestamp + lowerBound <= rightElement.timestamp <= leftElement.timestamp + upperBound 相当于左边的流可以晚到lowerBound（lowerBound为负的话）时间，也可以早到upperBound（upperBound为正的话）时间。
+- 在使用中, between方法传递的两个参数lowerBound和upperBound并不是拍脑袋决定的。如果时间间隔设置过短，可能出现两条流Join不上的情况；如果时间间隔设置过长，则可能造成流任务存在比较大的状态而不能及时清理。参数的设置一般会参考业务含义、以及可以通过历史离线数据得到一个相对合理的时间间隔保证双流数据都可以Join到。
+
+#### 创建合并后的宽表实体类
+
+```scala
+/**
+ * 订单和订单明细关联宽表对应实体类
+ * "id"相关的字段，在数仓中用string类型表示
+ */
+class DwdOrderDetail extends Model{
+
+  override var ts: Long = _
+  // 订单明细表
+  var detail_id: String = _
+  var order_id: String = _
+  var sku_id: String = _
+  var sku_name: String = _
+  var sku_num: String = _
+  var order_price: Double = _
+  var source_type: String = _
+  // 订单表
+  var province_id: String = _
+  var user_id: String = _
+  var order_status: String = _
+  var total_amount: Double = _
+  var activity_reduce_amount: Double = _
+  var coupon_reduce_amount: Double = _
+  var original_total_amount: Double = _
+  var feight_fee: Double = _
+  // 明细表
+  var split_total_amount: Double = _
+  var split_activity_amount: Double = _
+  var split_coupon_amount: Double = _
+  // 订单表
+  var create_time: String = _
+  var operate_time: String = _
+  var expire_time: String = _
+  var create_date: String = _ // 把其他字段处理得到
+  var create_hour: String = _
+
+  // 查询维表得来: 地区
+  var province_name: String = _
+  var province_area_code: String = _
+  var province_iso_code: String = _
+  var province_3166_2_code: String = _
+
+  // 用户
+  var user_age: Int = _
+  var user_gender: String = _
+
+  // 商品: 查询sku维表
+  var spu_id: String = _
+  var tm_id: String = _ // 品牌id
+  var category3_id: String = _
+
+  // spu
+  var spu_name: String = _
+  // tm
+  var tm_name: String = _
+  // category
+  var category3_name: String = _
+  
+}
+```
+
+#### 代码实现
+
+
+
+
+
 
 
 
