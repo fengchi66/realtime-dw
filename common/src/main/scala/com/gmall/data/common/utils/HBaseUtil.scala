@@ -24,7 +24,8 @@ object HBaseUtil {
       conf.set(HConstants.ZOOKEEPER_QUORUM, Config.hbaseZookeeperQuorum)
       conn = ConnectionFactory.createConnection(conf)
     } catch {
-      case e: Exception => LoggerUtil.error(logger, e, "failed to get HBase connection")
+      case e: Exception => LoggerUtil.error(logger, e,
+        "failed to get HBase connection")
     }
     conn
   }

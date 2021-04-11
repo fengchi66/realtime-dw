@@ -19,6 +19,22 @@ object Constants {
   val DB_ENV: Seq[String] = Seq[String]("prod", "stage")
 
   val USER_INFO_TOPIC = "gmall2021.user_info"
+  val DIM_USER_INFO = "dim:dim_user_info"
+
+  val SPU_INFO_TOPIC = "gmall2021.spu_info"
+  val DIM_SPU_INFO = "dim:dim_spu_info"
+
+  val SKU_INFO_TOPIC = "gmall2021.sku_info"
+  val DIM_SKU_INFO = "dim:dim_sku_info"
+
+  val PROVINCE_INFO_TOPIC = "gmall2021.base_province"
+  val DIM_PROVINCE_INFO = "dim:dim_province_info"
+
+  val TRADEMARK_INFO_TOPIC = "gmall2021.base_trademark"
+  val DIM_TRADEMARK_INFO = "dim:dim_trademark_info"
+
+  val CATEGORY3_INFO_TOPIC = "gmall2021.base_category3"
+  val DIM_CATEGORY3_INFO = "dim:dim_category3_info"
 
   val ODS_TABLE_LIST: Seq[String] = Seq[String](
     "gmall2021.activity_info",

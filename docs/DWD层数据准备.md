@@ -221,7 +221,119 @@ class {ods_model_class_name} extends OdsModel {
   ```
 
   - 用户维度表以user_id作为rowkey，其余13列用户信息存在列簇f1下。
-  - 在使用HBase的时候，一定要注意表的rowkey以及预分区的设计，否则可能带来严重的数据热点问题，影响线上数据服务。
+  - 对于用户信息的更新操作，一般只需要保留最新的用户信息就行了，所以HBase表的版本数设置为1(默认)，利用HBase的幂等性来实现用户维度表的更新。
+  - 在使用HBase的时候，一定要注意表的rowkey以及预分区的设计，否则可能带来严重的数据热点问题，影响线上数据服务。本次测试中部署的HBase单节点，功能测试为主，不做预分区的设计。
+
+- **写入数据到Hbase**
+
+  - 对于**DataStream**所有的sink操作，可以设置一个Sink的基类，子类实现具体的流的sink实现。
+
+    ```scala
+    /**
+     * sink接口，流sink函数需要继承该抽象类
+     *
+     * @tparam T
+     */
+    abstract class Sink[T] {
+    
+      // 请子类取一个有意义的方法名的方法来调用sink方法
+      def sink(input: DataStream[T]): Unit = {
+        doSink(input)
+      }
+    
+      // 基于业务,封装在doSink方法中
+      protected def doSink(input: DataStream[T]): Unit
+    
+    }
+    ```
+
+  - **RichSinkFunction代码实现**
+
+    ```scala
+    class UserInfoSinkFunc extends RichSinkFunction[UserInfo] {
+    
+        private var conn: Connection = _
+        private var table: Table = _
+    
+        override def open(parameters: Configuration): Unit = {
+          conn = HBaseUtil.getConn()
+          table = conn.getTable(TableName.valueOf(Constants.DIM_USER_INFO))
+        }
+    
+        override def invoke(input: UserInfo, context: SinkFunction.Context[_]): Unit =
+          try {
+            val put = new Put(Bytes.toBytes(input.id))
+    
+            // 添加要上传的列
+            put.addColumn(Bytes.toBytes("f1"), Bytes.toBytes("login_name"), Bytes.toBytes(input.login_name))
+            put.addColumn(Bytes.toBytes("f1"), Bytes.toBytes("nick_name"), Bytes.toBytes(input.nick_name))
+            // 。。。
+    
+            table.put(put)
+          } catch {
+            case e: Exception => LoggerUtil.error(logger, e,
+              s"failed to UserInfoSinkFunc.invoke,input=${input}")
+          }
+    
+        override def close(): Unit = {
+          if (table != null) table.close()
+          if (conn != null) conn.close()
+        }
+      }
+    ```
+
+- **查看HBase中表数据**
+
+  ```shell
+  hbase(main):012:0> scan 'dim:dim_user_info',LIMIT=>1
+  ROW                            COLUMN+CELL                                                                            
+   1                             column=f1:birthday, timestamp=1618118849366, value=1985-11-23                          
+   1                             column=f1:create_time, timestamp=1618118849366, value=2020-11-23 20:03:49              
+   1                             column=f1:email, timestamp=1618118849366, value=cjn0s1flj@googlemail.com               
+   1                             column=f1:gender, timestamp=1618118849366, value=F                                     
+   1                             column=f1:login_name, timestamp=1618118849366, value=pbgkadgis99                       
+   1                             column=f1:name, timestamp=1618118849366, value=\xE9\xA1\xBE\xE7\x91\x9E\xE5\x87\xA1    
+   1                             column=f1:nick_name, timestamp=1618118849366, value=\xE5\x98\x89\xE5\x98\x89           
+   1                             column=f1:phone_num, timestamp=1618118849366, value=13622353916                        
+   1                             column=f1:user_level, timestamp=1618118849366, value=2                                 
+  1 row(s)
+  Took 0.0103 seconds 
+  ```
+
+  此时已经成功将用户信息维度表写入到HBase了，作为实时数仓的DIM层。
+
+#### 商品：SPU维度表
+
+#### 商品：SKU维度表
+
+#### 地区维度表
+
+#### 品牌维度表
+
+#### 类目维度表
+
+以上维度表写入HBase与dim_user_info类似，具体可以详见代码**`ods2dim`**模块：com.gmall.data.dim.App。维度数据都写入Hbase后，参考Hbase中的表:
+
+```shell
+hbase(main):012:0> list
+TABLE                                                                                                                   
+dim:dim_category3_info                                                                                                  
+dim:dim_province_info                                                                                                   
+dim:dim_sku_info                                                                                                        
+dim:dim_spu_info                                                                                                        
+dim:dim_trademark_info                                                                                                  
+dim:dim_user_info       
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
