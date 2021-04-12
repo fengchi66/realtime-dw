@@ -484,9 +484,65 @@ abstract class Merger[T1, T2, T](source: DataStream[T1]) extends Serializable {
 
 
 
+### 订单明细表关联优惠券表
+
+用户下单支付的时候，往往还会领取相应的优惠券，订单系统会维护一张订单明细的Coupon表，也就是案例中的order_detail_coupon表，所以在订单明细事实宽表中，也需要冗余该订单的活动、优惠券的信息，方便事实数仓下游的统计分析等。
+
+但不是每个订单都会领取优惠券参与活动，所以需要实现left join。那么，实现left join，需要选择什么方案呢？
+
+在Flink中，实现双流join，前面已经介绍了基于时间间隔的interval join，并且interval join实现的是**inner join**的语义。除了interval join，Flink还提供了基于时间窗口的双流join。
+
+```java
+stream.join(otherStream)
+    .where(<KeySelector>)
+    .equalTo(<KeySelector>)
+    .window(<WindowAssigner>)
+    .apply(<JoinFunction>)
+```
+
+基于窗口的Join是将具有相同key并位于同一个窗口中的事件进行联结。值的一提的是，**join**算子也是实现的**inner join**，如果我们需要用到**coGroup**算子。
+
+#### coGroup
+
+该操作是将两个数据流/集合按照key进行group，然后将相同key的数据进行处理，但是它和join操作稍有区别，它在一个流/数据集中没有找到与另一个匹配的数据还是会输出。
+
+coGroup的用法类似于Join，不同的是在apply中传入的是一个CoGroupFunction，而不是JoinFunction。
+
+```
+stream.coGroup(otherStream)
+    .where(<KeySelector>)
+    .equalTo(<KeySelector>)
+    .window(<WindowAssigner>)
+    .apply(<CoGroupFunction>)
+```
 
 
 
+#### SessionWindow
+
+我们清楚需要使用**coGroup**算子来实现**left join**，那么应该选择哪种window保证具有相同key的在同一个窗口中进行联结呢？先简单介绍一下，基于滚动窗口的join，官方的描述:
+
+**基于滚动窗口的join**
+
+当执行滚动窗口联接时，所有具有公共键和公共滚动窗口的元素都按成对组合联接，并传递给a`JoinFunction`或`FlatJoinFunction`。因为它的行为就像一个内部联接，所以在其滚动窗口中不发出一个流中没有其他流元素的元素！
+
+![img](DWD层数据准备.assets/tumbling-window-join.svg)
+
+如图所示，我们定义了一个大小为2毫秒的翻滚窗口，该窗口的形式为`[0,1], [2,3], ...`。该图显示了每个窗口中所有元素的成对组合，这些元素将传递给`JoinFunction`。注意，在翻转窗口中`[6,7]`什么也不发射，因为在绿色流中不存在要与橙色元素⑥和joined连接的元素。
+
+道理我们都懂，但不管是滚动窗口还是滑动窗口，都很难保证我们想要join的两条数据能够在一个窗口中。实时上，在订单系统中，需要join的两张事实表都是具有业务上的绑定的。比如，**订单优惠明细表会在支付订单的一段时间内写入到订单系统中**。
+
+**基于SessionWindow的Join**
+
+看一个实际场景：当我们需要分析用户的一段交互的行为事件时，通常的想法是将用户的事件流按照“session”来分组。session 是指一段持续活跃的期间，由活跃间隙分隔开。通俗一点说，消息之间的间隔小于超时阈值（`sessionGap`）的，则被分配到同一个窗口，间隔大于阈值的，则被分配到不同的窗口。
+
+Flink的底层API中是实现了session window的，因此上面的场景，只要设置合理的`sessionGap`，是可以保证双流相同key的数据在一个窗口内的。
+
+![img](DWD层数据准备.assets/session-window-join.svg)
+
+
+
+#### 代码实现
 
 
 
