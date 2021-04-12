@@ -14,6 +14,8 @@ object Constants {
 
   val DT_DATE_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
   val DATE_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+  // mysql中的业务时间一般精确到秒级
+  val DATE_TIME_MIN_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
   val KEYWORD_BLACK_LIST: Seq[String] = Seq[String]("type")
   val DB_ENV: Seq[String] = Seq[String]("prod", "stage")
@@ -35,6 +37,9 @@ object Constants {
 
   val CATEGORY3_INFO_TOPIC = "gmall2021.base_category3"
   val DIM_CATEGORY3_INFO = "dim:dim_category3_info"
+
+  val ORDER_INFO_TOPIC = "gmall2021.order_info"
+  val ORDER_DETAIL_TOPIC = "gmall2021.order_detail"
 
   val ODS_TABLE_LIST: Seq[String] = Seq[String](
     "gmall2021.activity_info",

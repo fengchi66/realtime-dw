@@ -463,7 +463,24 @@ abstract class Merger[T1, T2, T](source: DataStream[T1]) extends Serializable {
 
 **子类实现**
 
-
+```SCALA
+ input1.keyBy(_.id)
+      .intervalJoin(input2.keyBy(_.order_id))
+      .between(Time.seconds(-5), Time.seconds(5))
+      .process(new ProcessJoinFunction[OrderInfo, OrderDetail, DwdOrderDetail] {
+        override def processElement(left: OrderInfo,
+                                    right: OrderDetail,
+                                    context: ProcessJoinFunction[OrderInfo, OrderDetail, DwdOrderDetail]#Context,
+                                    out: Collector[DwdOrderDetail]): Unit =
+          try {
+            val orderDetail = DwdOrderDetail().from(left).from(right)
+            out.collect(orderDetail)
+          } catch {
+            case e: Exception => LoggerUtil.error(OrderInfoAndDetailMerger.logger, e,
+              s"failed to OrderInfoAndDetailMerger.merger,left=${left},right=${right}")
+          }
+      })
+```
 
 
 

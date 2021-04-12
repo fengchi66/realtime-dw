@@ -36,4 +36,14 @@ object TimeUtil {
     case _: Throwable => 0L
   }
 
+  /**
+   * 将业务库中的秒级时间转换为dt类型
+   * @param datetime
+   * @return
+   */
+  def formatDt(datetime: String): String = {
+    Constants.DT_DATE_TIME_FORMATTER.format(LocalDateTime.parse(datetime, Constants.DATE_TIME_MIN_FORMATTER))
+  }
+
+
 }
