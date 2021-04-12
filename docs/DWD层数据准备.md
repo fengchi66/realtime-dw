@@ -544,6 +544,34 @@ Flink的底层API中是实现了session window的，因此上面的场景，只�
 
 #### 代码实现
 
+```scala
+ input1.coGroup(input2)
+      .where(_.detail_id)
+      .equalTo(_.order_detail_id)
+      .window(EventTimeSessionWindows.withGap(Time.seconds(5)))
+      .apply(new CoGroupFunction[DwdOrderDetail, OrderDetailCoupon, DwdOrderDetail{
+        override def coGroup(iterable: lang.Iterable[DwdOrderDetail],
+                             iterable1: lang.Iterable[OrderDetailCoupon],
+                             out: Collector[DwdOrderDetail]): Unit =
+          try {
+            val left = iterable.asScala.toSeq
+            val right = iterable1.asScala.toSeq
+
+            if (left.isEmpty)
+              OrderDetailAndCouponMerger.logger.warn("DwdOrderDetail is empty")
+            else {
+              if (right.isEmpty) // 直接发出结果
+                out.collect(left.head)
+              else // 关联coupon信息
+                out.collect(left.head.from(right.head))
+            }
+          } catch {
+            case e: Exception => LoggerUtil.error(OrderDetailAndCouponMerger.logger, e,
+              s"failed to OrderDetailAndCouponMerger.merger,left=${iterable},right=${iterable1}")
+          }
+      })
+```
+
 
 
 

@@ -3,7 +3,7 @@ package com.gmall.data.common.entity.dwd
 import java.util.Objects
 
 import com.gmall.data.common.entity.ods.Model
-import com.gmall.data.common.entity.ods.gmall2021.{OrderDetail, OrderInfo}
+import com.gmall.data.common.entity.ods.gmall2021.{OrderDetail, OrderDetailCoupon, OrderInfo}
 import com.gmall.data.common.utils.{TimeUtil, Util}
 
 /**
@@ -38,6 +38,9 @@ class DwdOrderDetail extends Model with Serializable {
   var create_time: String = _
   var operate_time: String = _
   var expire_time: String = _
+
+  // coupon
+  var coupon_id: String = _
 
   // 查询维表得来: 地区
   var province_name: String = _
@@ -82,7 +85,6 @@ class DwdOrderDetail extends Model with Serializable {
       this.create_time = r.create_time
       this.operate_time = r.operate_time
       this.expire_time = r.expire_time
-      this.ts = r.ts
       this.dt = TimeUtil.formatDt(r.create_time)
     }
     this
@@ -104,11 +106,24 @@ class DwdOrderDetail extends Model with Serializable {
       this.split_total_amount = Util.toDouble(r.split_total_amount)
       this.split_activity_amount = Util.toDouble(r.split_activity_amount)
       this.split_coupon_amount = Util.toDouble(r.split_coupon_amount)
+      this.ts = r.ts
     }
     this
   }
 
-  override def toString = s"DwdOrderDetail(ts=$ts, detail_id=$detail_id, order_id=$order_id, sku_id=$sku_id, sku_name=$sku_name, sku_num=$sku_num, order_price=$order_price, source_type=$source_type, province_id=$province_id, user_id=$user_id, order_status=$order_status, total_amount=$total_amount, activity_reduce_amount=$activity_reduce_amount, coupon_reduce_amount=$coupon_reduce_amount, original_total_amount=$original_total_amount, feight_fee=$feight_fee, split_total_amount=$split_total_amount, split_activity_amount=$split_activity_amount, split_coupon_amount=$split_coupon_amount, create_time=$create_time, operate_time=$operate_time, expire_time=$expire_time, province_name=$province_name, province_area_code=$province_area_code, province_iso_code=$province_iso_code, province_3166_2_code=$province_3166_2_code, user_age=$user_age, user_gender=$user_gender, spu_id=$spu_id, tm_id=$tm_id, category3_id=$category3_id, spu_name=$spu_name, tm_name=$tm_name, category3_name=$category3_name, dt=$dt)"
+  /**
+   * 从order_coupon事实表中取的字段
+   * @param r
+   * @return
+   */
+  def from(r: OrderDetailCoupon): DwdOrderDetail = {
+    if (Objects.nonNull(r)){
+      this.coupon_id = r.coupon_id
+    }
+    this
+  }
+
+  override def toString = s"DwdOrderDetail(ts=$ts, detail_id=$detail_id, order_id=$order_id, sku_id=$sku_id, sku_name=$sku_name, sku_num=$sku_num, order_price=$order_price, source_type=$source_type, province_id=$province_id, user_id=$user_id, order_status=$order_status, total_amount=$total_amount, activity_reduce_amount=$activity_reduce_amount, coupon_reduce_amount=$coupon_reduce_amount, original_total_amount=$original_total_amount, feight_fee=$feight_fee, split_total_amount=$split_total_amount, split_activity_amount=$split_activity_amount, split_coupon_amount=$split_coupon_amount, create_time=$create_time, operate_time=$operate_time, expire_time=$expire_time, coupon_id=${coupon_id}, province_name=$province_name, province_area_code=$province_area_code, province_iso_code=$province_iso_code, province_3166_2_code=$province_3166_2_code, user_age=$user_age, user_gender=$user_gender, spu_id=$spu_id, tm_id=$tm_id, category3_id=$category3_id, spu_name=$spu_name, tm_name=$tm_name, category3_name=$category3_name, dt=$dt)"
 }
 
 object DwdOrderDetail {

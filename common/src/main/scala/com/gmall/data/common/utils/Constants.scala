@@ -40,6 +40,7 @@ object Constants {
 
   val ORDER_INFO_TOPIC = "gmall2021.order_info"
   val ORDER_DETAIL_TOPIC = "gmall2021.order_detail"
+  val ORDER_DETAIL_COUPON_TOPIC = "gmall2021.order_detail_coupon"
 
   val ODS_TABLE_LIST: Seq[String] = Seq[String](
     "gmall2021.activity_info",
