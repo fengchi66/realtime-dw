@@ -572,9 +572,77 @@ Flink的底层API中是实现了session window的，因此上面的场景，只�
       })
 ```
 
+## 事实表与维度表关联
+
+在实时数仓中，维度表一般是使用HBase或者Redis这两种数据库来作为存储介质的。这两种数据库，各有优缺点，一般是基于业务场景来决定。这里基于Flink流计算中的几种维表关联的方案:
+
+### 维表Join的方案
+
+#### **方案一：将维表预加载到内存关联**
+
+- 实现方式
+
+  - 定义一个类实现RichFlatMapFunction在open()方法中读取全部数据加载到内存中。在流上使用该算子，运行时与内存维度数据关联。
+
+- 优点：实现简单
+
+- 缺点:：因为存在内存中，所以仅支持小数据量维表；因为open方法中读取，所以维表变化需要重启作业。
+
+- 代码示例:
+
+  <img src="DWD层数据准备.assets/image-20210413225611694.png" alt="image-20210413225611694" style="zoom:50%;" />
+
+#### 方案二：预加载维表
+
+- 实现方式：
+  - 通过Distributed Cache分发本地维度文件到task manager后加载到内存关联
+  - 通过env.registerCachedFile注册文件
+  - 实现RichFunction在open()方法中通过RuntimeContext获取cache文件
+  - 解析使用文件数据
+- 优缺点: 
+  - 不需要外部数据库
+  - 支持的数据量小，更新维表配置文件需要重启作业
+
+#### 方案三：热存储关联
+
+- 实现方式：
+
+  - 实时流与热存储上维度数据关联，使用cache减轻存储访问压力
+  - 将维度数据导入到热存储redis hbase es等，通过异步IO的方式查询，利用**cache机制**将维度数据缓存在内存。
+
+- 优缺点:
+
+  - 维度数据不受限与内存，支持较多维度数据
+  - 维度更新结果可能有延迟，而且对外部存储的压力较大
+
+- 试用场景：
+
+  - 维度数据量较大，可接受维度更新有一定的延迟
+
+  <img src="DWD层数据准备.assets/image-20210413230514762.png" alt="image-20210413230514762" style="zoom:50%;" />
 
 
 
+#### 方案四：广播维表
+
+- 实现方式
+
+  - 利用broadcast State将维度数据流广播到下游做join
+  - 将维度数据发送到kakfa作为广播原始流S1
+  - 定义状态描述符MapStateDescriptor 调用S1.broadcast()获得broadCastStream S2
+  - 调用非广播流S3.connect(S2),得到BroadcastConnectedStream S4
+  - 应用混合流的S4.process()，并在KeyedBroadcastProcessFunction/BroadcastProcessFunction实现关联处理逻辑
+
+- 优缺点:
+
+  - 维度数据实时更新
+  - 数据保存在内存中，支持维表数据量比较小。
+
+  <img src="DWD层数据准备.assets/image-20210413231328430.png" alt="image-20210413231328430" style="zoom:50%;" />
+
+一般来说，维度表数据都会维度在数据库中，方便维护和管理，当然在维度数据量很小的情况下也可以使用内存缓存或者广播维表的方式来实现，这里主要介绍方案三的实现。
+
+### 异步IO
 
 
 
