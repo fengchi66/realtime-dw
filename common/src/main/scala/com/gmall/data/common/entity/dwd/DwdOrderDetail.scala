@@ -2,6 +2,7 @@ package com.gmall.data.common.entity.dwd
 
 import java.util.Objects
 
+import com.gmall.data.common.entity.dim.DimUserInfo
 import com.gmall.data.common.entity.ods.Model
 import com.gmall.data.common.entity.ods.gmall2021.{OrderDetail, OrderDetailCoupon, OrderInfo}
 import com.gmall.data.common.utils.{TimeUtil, Util}
@@ -49,8 +50,9 @@ class DwdOrderDetail extends Model with Serializable {
   var province_3166_2_code: String = _
 
   // 用户
-  var user_age: Int = _
+  var user_birthday: String = _
   var user_gender: String = _
+  var user_login_name: String = _
 
   // 商品: 查询sku维表
   var spu_id: String = _
@@ -123,7 +125,14 @@ class DwdOrderDetail extends Model with Serializable {
     this
   }
 
-  override def toString = s"DwdOrderDetail(ts=$ts, detail_id=$detail_id, order_id=$order_id, sku_id=$sku_id, sku_name=$sku_name, sku_num=$sku_num, order_price=$order_price, source_type=$source_type, province_id=$province_id, user_id=$user_id, order_status=$order_status, total_amount=$total_amount, activity_reduce_amount=$activity_reduce_amount, coupon_reduce_amount=$coupon_reduce_amount, original_total_amount=$original_total_amount, feight_fee=$feight_fee, split_total_amount=$split_total_amount, split_activity_amount=$split_activity_amount, split_coupon_amount=$split_coupon_amount, create_time=$create_time, operate_time=$operate_time, expire_time=$expire_time, coupon_id=${coupon_id}, province_name=$province_name, province_area_code=$province_area_code, province_iso_code=$province_iso_code, province_3166_2_code=$province_3166_2_code, user_age=$user_age, user_gender=$user_gender, spu_id=$spu_id, tm_id=$tm_id, category3_id=$category3_id, spu_name=$spu_name, tm_name=$tm_name, category3_name=$category3_name, dt=$dt)"
+ def from(r: DimUserInfo): DwdOrderDetail = {
+   this.user_birthday = r.userBirthday
+   this.user_gender = r.userGender
+   this.user_login_name = r.userLoginName
+   this
+ }
+
+  override def toString = s"DwdOrderDetail(ts=$ts, detail_id=$detail_id, order_id=$order_id, sku_id=$sku_id, sku_name=$sku_name, sku_num=$sku_num, order_price=$order_price, source_type=$source_type, province_id=$province_id, user_id=$user_id, order_status=$order_status, total_amount=$total_amount, activity_reduce_amount=$activity_reduce_amount, coupon_reduce_amount=$coupon_reduce_amount, original_total_amount=$original_total_amount, feight_fee=$feight_fee, split_total_amount=$split_total_amount, split_activity_amount=$split_activity_amount, split_coupon_amount=$split_coupon_amount, create_time=$create_time, operate_time=$operate_time, expire_time=$expire_time, coupon_id=${coupon_id}, province_name=$province_name, province_area_code=$province_area_code, province_iso_code=$province_iso_code, province_3166_2_code=$province_3166_2_code, user_birthday=$user_birthday, user_gender=$user_gender, spu_id=$spu_id, tm_id=$tm_id, category3_id=$category3_id, spu_name=$spu_name, tm_name=$tm_name, category3_name=$category3_name, dt=$dt)"
 }
 
 object DwdOrderDetail {

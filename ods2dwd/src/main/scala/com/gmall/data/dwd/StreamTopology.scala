@@ -1,14 +1,18 @@
 package com.gmall.data.dwd
 
 import com.gmall.data.common.config.KafkaConfig
+import com.gmall.data.common.entity.dwd.DwdOrderDetail
 import com.gmall.data.common.entity.ods.SqlType
 import com.gmall.data.common.entity.ods.gmall2021.{OrderDetail, OrderDetailCoupon, OrderInfo}
+import com.gmall.data.common.sink.SinkFactory
 import com.gmall.data.common.source.SourceFactory
 import com.gmall.data.common.utils.Constants
 import org.apache.flink.streaming.api.scala._
 import com.gmall.data.dwd.Step._
 
 object StreamTopology {
+
+  private val dwdProducer = SinkFactory.createKafkaProducer[DwdOrderDetail](Constants.DWD_ORDER_DETAIL_TOPIC)
 
   def build(kafkaConfig: KafkaConfig)(
     implicit env: StreamExecutionEnvironment): Unit = {
@@ -32,7 +36,9 @@ object StreamTopology {
     odsOrderInfoStream
       .joinStream(odsOrderDetailStream)
       .assignAscendingTimestamps(_.ts)
-      .joinStream(orderCouponStream)
+//      .joinStream(orderCouponStream)
+      .joinDimUser()
+      .addSink(dwdProducer)
 
   }
 

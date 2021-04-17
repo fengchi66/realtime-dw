@@ -644,9 +644,168 @@ Flink的底层API中是实现了session window的，因此上面的场景，只�
 
 ### 异步IO
 
+Async I/O 是阿里巴巴贡献给社区的一个呼声非常高的特性，于1.2版本引入。主要目的是为了解决与外部系统交互时网络延迟成为了系统瓶颈的问题。
 
+相关flink异步IO的知识，请查看官网:[Flink异步IO](https://ci.apache.org/projects/flink/flink-docs-release-1.12/zh/dev/stream/operators/asyncio.html)
 
+#### 异步IO API
 
+Flink 的异步 I/O API 允许用户在流处理中使用异步请求客户端。API 处理与数据流的集成，同时还能处理好顺序、事件时间和容错等。
+
+在具备异步数据库客户端的基础上，实现数据流转换操作与数据库的异步 I/O 交互需要以下三部分：
+
+- 实现分发请求的 `AsyncFunction`
+- 获取数据库交互的结果并发送给 `ResultFuture` 的 *回调* 函数
+- 将异步 I/O 操作应用于 `DataStream` 作为 `DataStream` 的一次转换操作。
+
+#### 异步IO的重要参数
+
+```scala
+  def unorderedWait[IN, OUT: TypeInformation](
+      input: DataStream[IN],
+      asyncFunction: AsyncFunction[IN, OUT],
+      timeout: Long,
+      timeUnit: TimeUnit,
+      capacity: Int)
+    : DataStream[OUT] = {
+```
+
+- **结果顺序**：unorderedWait/orderedWait：结果的有序和无序
+- **Timeout**： 超时参数定义了异步请求发出多久后未得到响应即被认定为失败。 它可以防止一直等待得不到响应的请求。
+- **Capacity**： 容量参数定义了可以同时进行的异步请求数。 即使异步 I/O 通常带来更高的吞吐量，执行异步 I/O 操作的算子仍然可能成为流处理的瓶颈。 限制并发请求的数量可以确保算子不会持续累积待处理的请求进而造成积压，而是在容量耗尽时触发反压。
+
+### 维表关联
+
+这里以关联用户维表为例，使用异步IO结合缓存的方式实现订单明细事实表关联用户维度表扩展宽表中的字段。一般来说，公司都会有一个统一的实时数仓维度表的存储框架，HBase和Redis比较常见。选用HBase或者Redis，是否使用异步IO关联并没有一个明确的标准。
+
+- 当存储在Hbase中的维度表变化缓慢，且数据量较大时，我们对维度表的时效性不是特别高的时候，可以使用异步IO查询同时在本地内存中做**缓存**以提高查询性能。
+- 当维度表数据比较小，且变化频繁，把维表数据存在Redis中，查询redis也是一种不错的方案。
+
+**订单事实表与用户维度表关联**
+
+#### 代码实现
+
+```scala
+/**
+ * 订单明细表与用户维度表Join
+ * @param input
+ */
+case class OrderDetailAndDimUserJoin(input: DataStream[DwdOrderDetail])
+  extends Format[DwdOrderDetail] {
+  override def getUid: String = "joinDimUser"
+
+  override def getName: String = "joinDimUser"
+
+  def joinDimUser(): DataStream[DwdOrderDetail] = super.format(input)
+
+  override protected def doFormat(input: DataStream[DwdOrderDetail]): DataStream[DwdOrderDetail] = {
+    /**
+     * 几个重要的参数说明:
+     * 1.unorderedWait/orderedWait：结果的有序和无序
+     * 2.Timeout： 超时参数定义了异步请求发出多久后未得到响应即被认定为失败。 它可以防止一直等待得不到响应的请求。
+     * Capacity： 容量参数定义了可以同时进行的异步请求数。
+     */
+    AsyncDataStream.unorderedWait(input, new OrderDetailAndDimUserJoinFunc, 20, TimeUnit.SECONDS, 10)
+  }
+}
+
+object OrderDetailAndDimUserJoin {
+
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  /**
+   * guava cache用于将数据缓存到JVM内存中,简单、强大、及轻量级。
+   * 它不需要配置文件，使用起来和ConcurrentHashMap一样简单，而且能覆盖绝大多数使用cache的场景需求！
+   */
+  var cache: Cache[String, DimUserInfo] = _
+  var asyncConn: AsyncConnection = _
+  var table: AsyncTable[AdvancedScanResultConsumer] = _
+
+  class OrderDetailAndDimUserJoinFunc() extends RichAsyncFunction[DwdOrderDetail, DwdOrderDetail] {
+
+    // 当前线程下，用于future回调的上下文环境
+    implicit lazy val executor = ExecutionContext.fromExecutor(Executors.directExecutor())
+
+    /**
+     * 1. 初始化HBaseConnection、Table等，这里使用的是HBase2.0之后的异步客户端,实现与java库的CompletableFuture
+     * 2. 缓存的初始化
+     * @param parameters
+     */
+    override def open(parameters: Configuration): Unit = {
+      cache = CacheBuilder.newBuilder()
+        .expireAfterWrite(2, TimeUnit.HOURS) // 设置cache中的数据在写入之后的存活时间为2小时
+        .maximumSize(10000) // 设置缓存大小为10000
+        .build()
+
+      asyncConn = HBaseUtil.getAsyncConn().get()
+      table = asyncConn.getTable(TableName.valueOf(Constants.DIM_USER_INFO))
+    }
+
+    override def asyncInvoke(input: DwdOrderDetail, resultFuture: ResultFuture[DwdOrderDetail]): Unit =
+      try {
+        // 发送异步请求，接收 future 结果
+        val resultFutureRequested: Future[DwdOrderDetail] = Future {
+          var dimUser = new DimUserInfo
+          // 先查询缓存中数据，若缓存不存在则查询HBase
+          val dimUserInfo = cache.getIfPresent(input.user_id)
+
+          if (Objects.isNull(dimUserInfo)) { // 查询HBase
+            val get = new Get(Bytes.toBytes(input.user_id)).addFamily(Bytes.toBytes("f1"))
+
+            val result = table.get(get)
+            result.get().rawCells().foreach(cell => {
+              val colName = Bytes.toString(CellUtil.cloneQualifier(cell))
+              val value = Bytes.toString(CellUtil.cloneValue(cell))
+
+              colName match {
+                case "birthday" => dimUser.userBirthday = value
+                case "gender" => dimUser.userGender = value
+                case "login_name" => dimUser.userLoginName = value
+                case _ => // do nothing
+              }
+            })
+            // 将查询结果写入到缓存中
+            cache.put(input.user_id, dimUser)
+          } else
+            dimUser = dimUserInfo
+
+          // 结果输出
+          input.from(dimUser)
+        }
+
+        /**
+         * 客户端完成请求后要执行的回调函数,将结果发给future
+         */
+        resultFutureRequested.onSuccess {
+          case result: DwdOrderDetail => resultFuture.complete(Iterable(result))
+        }
+      } catch {
+        case e: Exception => LoggerUtil.error(logger, e,
+          s"failed to joinDimUser,input=$input")
+      }
+
+    /**
+     * 当异步 I/O 请求超时的时候，默认会抛出异常并重启作业。如果你想处理超时，可以重写 AsyncFunction#timeout 方法。
+     * @param input
+     * @param resultFuture
+     */
+    override def timeout(input: DwdOrderDetail, resultFuture: ResultFuture[DwdOrderDetail]): Unit =
+      super.timeout(input, resultFuture)
+
+    /**
+     * 关闭连接
+     */
+    override def close(): Unit = {
+      if (asyncConn != null) asyncConn.close()
+    }
+  }
+
+}
+```
+
+另外几张维度表的实现方式和以上类似，就不一一实现了，实际上我们考虑到了真实的线上数据情况，选择了一种比较复杂的实现方式。
+
+**以上，一张订单交易域的DWD事实宽表事实宽表就已经做好了，它包含了订单相关的明细数据，以及冗余了用户、商品、地区、品牌等维度的维度信息，然后将数据以**json**格式写入到Kafka中，作为实时数仓的DWD层。**
 
 
 
