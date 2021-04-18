@@ -44,6 +44,11 @@ object Constants {
 
   val DWD_ORDER_DETAIL_TOPIC  = "dwd_order_detail"
 
+  val ODS_BASE_LOG_TOPIC = "ods_base_log"
+  val DWD_START_LOG_TOPIC = "dwd_start_log"
+  val DWD_DISPLAY_LOG_TOPIC = "dwd_display_log"
+  val DWD_PAGE_LOG_TOPIC = "dwd_page_log"
+
   val ODS_TABLE_LIST: Seq[String] = Seq[String](
     "gmall2021.activity_info",
     "gmall2021.activity_rule",

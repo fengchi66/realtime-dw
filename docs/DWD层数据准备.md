@@ -32,6 +32,10 @@
       * [异步IO的重要参数](#异步io的重要参数)
     * [维表关联](#维表关联)
       * [代码实现](#代码实现-2)
+  * [流量数据DWD层](#流量数据dwd层)
+  * [数据埋点](#数据埋点)
+  * [流量拆分](#流量拆分)
+  * [流量分流输出](#流量分流输出)
 * [总结](#总结)
 
 #  需求分析及实现思路
@@ -843,7 +847,152 @@ object OrderDetailAndDimUserJoin {
 
 **以上，一张订单交易域的DWD事实宽表事实宽表就已经做好了，它包含了订单相关的明细数据，以及冗余了用户、商品、地区、品牌等维度的维度信息，然后将数据以**json**格式写入到Kafka中，作为实时数仓的DWD层。**
 
+## 流量数据DWD层
 
+我们前面采集的日志数据已经保存到Kafka中，作为日志数据的 ODS 层，从 kafka 的ODS 层读取的日志数据分为 3 类, 页面日志、启动日志和曝光日志。这三类数据虽然都是用户行为数据，但是有着完全不一样的数据结构，所以要拆分处理。将拆分后的不同的日志写回 Kafka 不同主题中，作为日志 DWD 层。
+
+页面日志输出到主流，启动日志输出到启动侧输出流，曝光日志输出到曝光侧输出流。
+
+**ODS层中的流量数据格式**
+
+```json
+{
+    "actions":[
+        {
+            "action_id":"get_coupon",
+            "item":"13",
+            "item_type":"coupon_id",
+            "ts":1618669254443
+        }
+    ],
+    "common":{
+        "ar":"110000",
+        "ba":"Xiaomi",
+        "ch":"xiaomi",
+        "is_new":"1",
+        "md":"Xiaomi 10 Pro ",
+        "mid":"mid_71",
+        "os":"Android 11.0",
+        "uid":"48",
+        "vc":"v2.1.134"
+    },
+    "displays":[
+        {
+            "display_type":"promotion",
+            "item":"90",
+            "item_type":"sku_id",
+            "order":1,
+            "pos_id":3
+        },
+        {
+            "display_type":"query",
+            "item":"10",
+            "item_type":"sku_id",
+            "order":2,
+            "pos_id":3
+        },
+        {
+            "display_type":"promotion",
+            "item":"89",
+            "item_type":"sku_id",
+            "order":3,
+            "pos_id":3
+        },
+        {
+            "display_type":"query",
+            "item":"91",
+            "item_type":"sku_id",
+            "order":4,
+            "pos_id":4
+        },
+        {
+            "display_type":"promotion",
+            "item":"35",
+            "item_type":"sku_id",
+            "order":5,
+            "pos_id":5
+        },
+        {
+            "display_type":"promotion",
+            "item":"61",
+            "item_type":"sku_id",
+            "order":6,
+            "pos_id":4
+        },
+        {
+            "display_type":"query",
+            "item":"5",
+            "item_type":"sku_id",
+            "order":7,
+            "pos_id":2
+        }
+    ],
+    "page":{
+        "during_time":16887,
+        "item":"35",
+        "item_type":"sku_id",
+        "last_page_id":"login",
+        "page_id":"good_detail",
+        "source_type":"recommend"
+    },
+    "ts":1618669246000
+}
+```
+
+**主要任务**
+
+- **数据拆分**
+
+  根据日志数据内容,将日志数据分为 3 类, 页面日志、启动日志和曝光日志。
+
+  - 启动日志:  原始数据中包含`start`属性
+  - 曝光数据: 原始数据中包含`display`属性，每次上报的数据可能有多次曝光，需要做flatMap
+  - 页面数据
+
+- **将不同流的数据推送下游的 kafka 的不同 Topic 中**
+
+## 数据埋点
+
+[一文读懂产品埋点](https://mp.weixin.qq.com/s/7ayENVBguxxmYDtoG5t5ww)
+
+[关于曝光埋点，你知多少](https://mp.weixin.qq.com/s/efsdC6Xpn2p51m0aLmGH7g)
+
+[你应该掌握的产品数据指标](https://mp.weixin.qq.com/s/Vw9vCyR9VYVKsJjNxvstpw)
+
+## 流量拆分
+
+**代码实现**: **`com.gmall.data.dwd.FlowTopology`**
+
+```scala
+input.process(new ProcessFunction[OdsBaseLog, DwdBaseLog] {
+      override def processElement(input: OdsBaseLog,
+                                  context: ProcessFunction[OdsBaseLog, DwdBaseLog]#Context,
+                                  out: Collector[DwdBaseLog]): Unit =
+        try {
+          if (input.start != null) { // 启动日志
+            val dwdStartLog = GsonUtil.gson.fromJson(input.common, classOf[DwdStartLog])
+            out.collect(dwdStartLog.from(input.start).from(input.ts))
+          } else { // 非启动日志,则为页面日志或者曝光日志(携带页面信息)
+            if (input.displays != null) { //曝光日志，做flatMap
+              val dwdDisplayLog = GsonUtil.gson.fromJson(input.common, classOf[DwdDisplayLog])
+              for (elem <- input.displays.asScala) {
+                out.collect(dwdDisplayLog.from(input.ts).from(elem).from(input.page))
+              }
+            } else { // 页面访问日志
+              val dwdPageLog = GsonUtil.gson.fromJson(input.common, classOf[DwdPageLog])
+              out.collect(dwdPageLog.from(input.page).from(input.ts))
+            }
+          }
+        } catch {
+          case e: Exception => LoggerUtil.error(OdsBaseLogConvert.logger, e,
+            s"failed to OdsBaseLogConvert.doConvert,input=${input}")
+        }
+    })
+```
+
+## 流量分流输出
+
+<img src="DWD层数据准备.assets/image-20210418152453150.png" alt="image-20210418152453150" style="zoom:50%;" />
 
 # 总结
 
@@ -856,3 +1005,4 @@ object OrderDetailAndDimUserJoin {
   - 事实表关联：双流Join
   - 维度表关联：Cache + 异步IO
 - 以上都可以使用Flink sql（在搭建好实时计算平台之后）
+

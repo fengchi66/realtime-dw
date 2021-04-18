@@ -17,7 +17,6 @@ import scala.reflect.ClassTag
  */
 class EventKafkaSerializationSchema[T](topic: String)(implicit classTag: ClassTag[T]) extends KafkaSerializationSchema[T]{
 
-  // 转换为json时候保留null属性的字段
   private lazy val gson = GsonUtil.gson
   lazy val logger = LoggerFactory.getLogger(this.getClass)
 

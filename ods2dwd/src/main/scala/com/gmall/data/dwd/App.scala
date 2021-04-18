@@ -34,14 +34,14 @@ object App {
     implicit val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.enableCheckpointing(120000)
     env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, Time.of(20, TimeUnit.SECONDS)))
-    env.setParallelism(1)
+//    env.setParallelism(1)
 
     val kafkaConfig = KafkaConfig(Config.kafkaBrokers, GROUP_ID, mode, timestamp)
 
     StreamTopology.build(kafkaConfig)
+    FlowTopology.build(kafkaConfig)
 
     env.execute("ods-dwd-streaming-job")
-
 
   }
 

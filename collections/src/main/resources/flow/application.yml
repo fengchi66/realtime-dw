@@ -1,31 +1,32 @@
 # 外部配置打开
 # logging.config=./logback.xml
 #业务日期
-mock.date: "2021-04-06"
+mock.date: "2021-04-17"
 
   #模拟数据发送模式
 mock.type: "kafka"
   #http模式下，发送的地址
 mock.url: "http://hdp1/applog"
 
+# 发送数据的kafka配置
 mock:
-  kafka-server: "106.14.115.122:9092"
-  kafka-topic: "ODS_BASE_LOG"
+  kafka-server: "localhost:9092"
+  kafka-topic: "ods_base_log"
 
   #启动次数
-mock.startup.count: 1000
+mock.startup.count: 10000
   #设备最大值
-mock.max.mid: 20
+mock.max.mid: 200
   #会员最大值
-mock.max.uid: 50
+mock.max.uid: 500
   #商品最大值
-mock.max.sku-id: 10
+mock.max.sku-id: 100
   #页面平均访问时间
 mock.page.during-time-ms: 20000
   #错误概率 百分比
 mock.error.rate: 3
   #每条日志发送延迟 ms
-mock.log.sleep: 100
+mock.log.sleep: 10
   #商品详情来源  用户查询，商品推广，智能推荐, 促销活动
 mock.detail.source-type-rate: "40:25:15:20"
 
@@ -33,9 +34,9 @@ mock.detail.source-type-rate: "40:25:15:20"
 mock.if_get_coupon_rate: 75
 
 #购物券最大id
-mock.max.coupon-id: 3
+mock.max.coupon-id: 30
 
   #搜索关键词  
-mock.search.keyword: "图书,小米,iphone11,电视,口红,ps5,苹果手机,小米盒子"
+mock.search.keyword: "图书,小米,iphone11,电视,口红,ps5,苹果手机,小米盒子,可乐"
 
 

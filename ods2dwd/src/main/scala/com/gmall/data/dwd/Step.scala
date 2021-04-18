@@ -1,8 +1,9 @@
 package com.gmall.data.dwd
 
 import com.gmall.data.common.entity.dwd.DwdOrderDetail
+import com.gmall.data.common.entity.ods.flow.OdsBaseLog
 import com.gmall.data.common.entity.ods.gmall2021.OrderInfo
-import com.gmall.data.dwd.transform.{OrderDetailAndCouponMerger, OrderDetailAndDimUserJoin, OrderInfoAndDetailMerger}
+import com.gmall.data.dwd.transform.{OdsBaseLogConvert, OrderDetailAndCouponMerger, OrderDetailAndDimUserJoin, OrderInfoAndDetailMerger}
 import org.apache.flink.streaming.api.scala._
 
 /**
@@ -18,5 +19,8 @@ object Step {
 
   implicit def orderDetailAndDimUserJoin(input: DataStream[DwdOrderDetail]) =
     OrderDetailAndDimUserJoin(input)
+
+  implicit def odsBaseLogConvert(input: DataStream[OdsBaseLog]) =
+    OdsBaseLogConvert(input)
 
 }
