@@ -49,6 +49,16 @@ object Constants {
   val DWD_DISPLAY_LOG_TOPIC = "dwd_display_log"
   val DWD_PAGE_LOG_TOPIC = "dwd_page_log"
 
+  val ODS_USER_ACTION_LOG = "ods_user_action_log"
+  val DWD_USER_ACTION_LOG = "dwd_user_action_log"
+  val DWD_USER_EXPOSE_LOG = "dwd_user_expose_log"
+  val DWD_PAGE_VIEW_LOG   = "dwd_page_view_log"
+
+  // 商品曝光、坑位曝光
+  val EXPOSE_EVENT_LIST = Seq[String]("ProductExposure", "banner_exposure")
+  // 活动页面浏览、Web 浏览页面、小程序页面浏览、App 浏览页面
+  val PAGE_EVENT_LIST   = Seq[String]("activity_pageview", "$pageview", "$MPViewScreen", "$AppViewScreen")
+
   val ODS_TABLE_LIST: Seq[String] = Seq[String](
     "gmall2021.activity_info",
     "gmall2021.activity_rule",

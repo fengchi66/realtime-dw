@@ -1,0 +1,92 @@
+ProductExposure,商品曝光
+distributionMode,分销模式
+inRoom,进入直播间
+joinGroupFail,拼团失败
+joinGroupFinish,拼团成功
+leaveRoom,退出直播间
+payGroupOrder,拼团支付订单
+pullNew,拉新成功
+roomaddToCart,直播间-加入购物车
+roomanchorShelfGoods,主播上架商品
+roombarrage,直播-发弹幕
+roombeginLive,开播
+roombuyNowClick,直播间-点击立即购买
+roomclickRoomGoods,点击直播间商品
+roomclickShoppingBag,直播间-点击购物袋
+roomfinishLive,结束直播
+roomfollowOrCancelFollow,关注主播
+roompayOrderDetails,直播-支付订单
+roomshareClick,直播-点击分享
+roomsubmitOrderDetail,直播-提交订单
+roomviewGoodsDetail,直播间-浏览商品详情
+$WechatClickMsgmenu,点击微信菜单会话
+$WechatClickMenu,点击微信公众号菜单
+$WechatUpdateUserLocation,上报微信用户地理位置
+$WechatScanQrcodeScene,扫描微信参数二维码
+$WechatUnfollow,取关微信公众号
+$WechatFollow,关注微信公众号
+$WechatReceiveMsgFromUser,微信公众号接收用户消息
+$WechatServiceMsgSendDone,微信客服消息终态信息
+$AppChannelMatching,访问渠道追踪链接
+$ShortUrlRedirect,短链跳转
+AppCrashed,App 崩溃
+activity_pageview,活动页面浏览
+activity_participate,活动参与
+banner_exposure,坑位曝光
+buyNow,立即购买
+SubmitOrderDetail,提交订单详情
+SubmitOrder,提交订单
+ShareResult,分享结果
+ShareMethod,选择分享方式
+ShareClick,点击分享
+SendCommodity,发货
+SelectReceiverAddress,选择地址
+SearchResultClick,点击搜索结果
+SearchRequest,搜索返回结果
+SearchColumClick,点击搜索栏
+SearchButtonClick,点击搜索按钮
+RegisterResult,注册结果
+RegisterButtonClick,点击注册按钮
+ReceiveDiscount,领取优惠券
+PushReceived,Push 通知送达
+PushClick,Push点击1
+PayOrderDetail,支付订单详情
+PayOrder,支付订单
+MPStartGroupBuy,小程序开团
+MPQRCodeScan,小程序线下扫码
+MPJoinGroupBuw,小程序参与拼团
+MPInviteHanggle,小程序邀请好友砍价
+MPHelpHanggle,小程序帮助砍价
+MPHangleSuccess,小程序砍价成功
+MPAuthorization,小程序授权 有数据
+LoginResult,登录  有数据
+LoginButtonClick,点击登录按钮
+GetCodeResult,获取验证码结果
+GetCode,点击获取验证码按钮
+Contact,联系客服
+ConfirmOrder,确认收货
+CommodityDetail,浏览商品详情页
+Comment,评价商品
+Collect,收藏商品
+CancelOrderDetail,取消订单详情
+CancelOrder,取消订单
+BannerClick,运营位点击
+ApplyReturn,申请退货
+AppOpenNotification,Push 点击
+AppInstall,App 激活
+AddToShoppingCart,加入购物车
+$pageview,Web 浏览页面
+$WebStay,Web 视区停留
+$WebClick,Web 元素点击
+$PlanMsgSendPrepare,消息已准备
+$PlanMsgSendDone,消息已发送
+$PlanConverted,推送转化
+$MPViewScreen,小程序页面浏览
+$MPShow,小程序启动
+$MPShare,小程序分享
+$MPLaunch,小程序首次启动
+$MPHide,小程序进入后台
+$AppViewScreen,App 浏览页面
+$AppStart,启动APP
+$AppEnd,退出APP
+$AppClick,App 元素点击

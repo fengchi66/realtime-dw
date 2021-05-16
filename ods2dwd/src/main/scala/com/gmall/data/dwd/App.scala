@@ -22,7 +22,7 @@ object App {
 
   val OPTION_MODE = "mode"
   val OPTION_TIMESTAMP = "timestamp"
-  val GROUP_ID = "ods-dim"
+  val GROUP_ID = "ods-dwd"
 
   def main(args: Array[String]): Unit = {
 
@@ -38,8 +38,9 @@ object App {
 
     val kafkaConfig = KafkaConfig(Config.kafkaBrokers, GROUP_ID, mode, timestamp)
 
-    StreamTopology.build(kafkaConfig)
-    FlowTopology.build(kafkaConfig)
+//    StreamTopology.build(kafkaConfig)
+//    FlowTopology.build(kafkaConfig)
+    FlowTopologyV2.build(kafkaConfig)
 
     env.execute("ods-dwd-streaming-job")
 

@@ -1,9 +1,10 @@
 package com.gmall.data.dwd
 
+import com.gmall.data.common.config.RedisConfig
 import com.gmall.data.common.entity.dwd.DwdOrderDetail
-import com.gmall.data.common.entity.ods.flow.OdsBaseLog
+import com.gmall.data.common.entity.ods.flow.{DwdUserBaseLog, OdsBaseLog, OdsUserActionLog}
 import com.gmall.data.common.entity.ods.gmall2021.OrderInfo
-import com.gmall.data.dwd.transform.{OdsBaseLogConvert, OrderDetailAndCouponMerger, OrderDetailAndDimUserJoin, OrderInfoAndDetailMerger}
+import com.gmall.data.dwd.transform.{DwdLogJoinDimEvent, OdsActionLogConvert, OdsBaseLogConvert, OrderDetailAndCouponMerger, OrderDetailAndDimUserJoin, OrderInfoAndDetailMerger}
 import org.apache.flink.streaming.api.scala._
 
 /**
@@ -22,5 +23,12 @@ object Step {
 
   implicit def odsBaseLogConvert(input: DataStream[OdsBaseLog]) =
     OdsBaseLogConvert(input)
+
+  implicit def odsActionLogConvert(input: DataStream[OdsUserActionLog]) =
+    OdsActionLogConvert(input)
+
+  implicit def dwdLogJoinDimEvent(input: DataStream[DwdUserBaseLog])(implicit redisConfig: RedisConfig) =
+    DwdLogJoinDimEvent(input)
+
 
 }

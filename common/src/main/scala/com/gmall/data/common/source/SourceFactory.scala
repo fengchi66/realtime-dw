@@ -3,6 +3,7 @@ package com.gmall.data.common.source
 import java.sql.Timestamp
 import java.util.{Objects, Properties}
 
+import com.alibaba.fastjson.JSON
 import com.alibaba.otter.canal.protocol.FlatMessage
 import com.gmall.data.common.config.KafkaConfig
 import com.gmall.data.common.source.binlog.OdsModelFactory
@@ -40,6 +41,7 @@ object SourceFactory extends Serializable {
     }
 
     def parse(item: String): T = try {
+      //      JSON.parseObject(item, real.runtimeClass).asInstanceOf[T]
       GsonUtil.gson.fromJson(item, real.runtimeClass).asInstanceOf[T]
     } catch {
       case _: Throwable => LOGGER.warn(s"failed to parse log item, log: $item")
