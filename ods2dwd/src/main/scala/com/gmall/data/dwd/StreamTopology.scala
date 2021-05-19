@@ -6,13 +6,14 @@ import com.gmall.data.common.entity.ods.SqlType
 import com.gmall.data.common.entity.ods.gmall2021.{OrderDetail, OrderDetailCoupon, OrderInfo}
 import com.gmall.data.common.sink.SinkFactory
 import com.gmall.data.common.source.SourceFactory
-import com.gmall.data.common.utils.Constants
+import com.gmall.data.common.utils.{Constants, GsonUtil}
 import org.apache.flink.streaming.api.scala._
 import com.gmall.data.dwd.Step._
 
 object StreamTopology {
 
-  private val dwdProducer = SinkFactory.createKafkaProducer[DwdOrderDetail](Constants.DWD_ORDER_DETAIL_TOPIC)
+//  private val dwdProducer = SinkFactory.createKafkaProducer[DwdOrderDetail](Constants.DWD_ORDER_DETAIL_TOPIC)
+  private val dwdProducer = SinkFactory.createProducer(Constants.DWD_ORDER_DETAIL_TOPIC)
 
   def build(kafkaConfig: KafkaConfig)(
     implicit env: StreamExecutionEnvironment): Unit = {
@@ -33,12 +34,15 @@ object StreamTopology {
       .assignAscendingTimestamps(_.ts)
 
     // 订单流与订单明细流join
-    odsOrderInfoStream
+    val dwdStream = odsOrderInfoStream
       .joinStream(odsOrderDetailStream)
       .assignAscendingTimestamps(_.ts)
-//      .joinStream(orderCouponStream)
-      .joinDimUser()
-      .addSink(dwdProducer)
+      //      .joinStream(orderCouponStream)
+      //      .joinDimUser()
+
+    dwdStream.map(GsonUtil.gson.toJson(_)).addSink(dwdProducer)
+    dwdStream.print()
+
 
   }
 

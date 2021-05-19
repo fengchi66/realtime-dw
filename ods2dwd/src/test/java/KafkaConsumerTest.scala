@@ -20,7 +20,7 @@ object KafkaConsumerTest {
     properties.setProperty("bootstrap.servers", kafkaConfig.brokers)
     properties.setProperty("group.id", kafkaConfig.groupId)
 
-    val kafkaConsumer = new FlinkKafkaConsumer[String]("ods_base_log", new SimpleStringSchema(), properties)
+    val kafkaConsumer = new FlinkKafkaConsumer[String]("dwd_order_detail", new SimpleStringSchema(), properties)
     kafkaConsumer.setStartFromEarliest()
 
     env.addSource(kafkaConsumer).print()

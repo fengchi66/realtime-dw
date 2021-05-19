@@ -14,6 +14,7 @@
         <module>ods2dwd</module>
         <module>ods2dim</module>
         <module>tools</module>
+        <module>dwd2dws</module>
     </modules>
 
     <properties>

@@ -38,9 +38,9 @@ object App {
 
     val kafkaConfig = KafkaConfig(Config.kafkaBrokers, GROUP_ID, mode, timestamp)
 
-//    StreamTopology.build(kafkaConfig)
+    StreamTopology.build(kafkaConfig)
 //    FlowTopology.build(kafkaConfig)
-    FlowTopologyV2.build(kafkaConfig)
+//    FlowTopologyV2.build(kafkaConfig)
 
     env.execute("ods-dwd-streaming-job")
 
