@@ -12,12 +12,12 @@ object KafkaConsumerDemo {
     env.setParallelism(1)
 
     val properties = new Properties()
-    properties.setProperty("bootstrap.servers", "localhost:9092")
+    properties.setProperty("bootstrap.servers", "sc-data-03.yit.net:9092")
     properties.setProperty("group.id", "kafkaConfig.groupId")
 
-    val kafkaConsumer = new FlinkKafkaConsumer[String]("ods_user_action_log", new SimpleStringSchema(), properties)
+    val kafkaConsumer = new FlinkKafkaConsumer[String]("event_topic", new SimpleStringSchema(), properties)
 
-    kafkaConsumer.setStartFromEarliest()
+//    kafkaConsumer.setStartFromEarliest()
 
     env.addSource(kafkaConsumer).print()
 
