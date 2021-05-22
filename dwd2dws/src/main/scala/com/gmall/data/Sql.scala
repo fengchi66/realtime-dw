@@ -133,4 +133,20 @@ object Sql {
       |)
       |""".stripMargin
 
+  val dws_flow_app_pv_10min =
+    """
+      |CREATE TABLE dws_flow_app_pv_10min (
+      |  app_name STRING,
+      |  start_time STRING,
+      |  end_time INT,
+      |  pv BIGINT
+      |) WITH (
+      |   'connector' = 'jdbc',
+      |   'url' = 'jdbc:mysql://localhost:3306/ads',
+      |   'table-name' = 'dws_flow_app_pv_10min',
+      |   'username' = 'root',
+      |   'password' = '992318abC'
+      |)
+      |""".stripMargin
+
 }
